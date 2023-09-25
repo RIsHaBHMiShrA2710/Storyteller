@@ -11,9 +11,19 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(
+  expressSession({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Connect to MongoDB using the MONGOAUTH environment variable
 mongoose.connect(process.env.MONGOAUTH, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -66,18 +76,19 @@ passport.deserializeUser((id, done) => {
   });
 });
 
+function isAuthenticated(req, res, next) {
+  console.log('isAuthenticated middleware called');
+  console.log(req.user);
+  console.log('req.isAuthenticated():', req.isAuthenticated());
+
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  res.status(401).json({ message: 'Authentication required' });
+}
+
 // Configure express-session for session management
-app.use(
-  expressSession({
-    secret: process.env.SESSION_SECRET, // Use a secret key from .env
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Centralized Error Handling
 app.use((err, req, res, next) => {
   console.error(err);
@@ -110,7 +121,7 @@ app.post('/register', async (req, res) => {
 
     res.status(200).send('User registered successfully.');
   } catch (error) {
-    next(error);
+    console.error(error);
   }
 });
 
@@ -123,7 +134,7 @@ app.post('/login', (req, res, next) => {
     }
 
     if (!user) {
-      
+
       return next({ status: 401, message: 'Authentication failed' });
     }
     req.logIn(user, (loginErr) => {
@@ -136,6 +147,65 @@ app.post('/login', (req, res, next) => {
   })(req, res, next); // This middleware is used to authenticate the user
 });
 
+app.post('/api/add-prompt', isAuthenticated, async (req, res) => {
+  const { title, story } = req.body;
+  const userId = req.user.id; // Assuming you have user information in req.user
+
+  // Create a new prompt object
+  const newPrompt = {
+    title,
+    story,
+    upvotes: 0,
+    downvotes: 0,
+  };
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      // Handle the case where the user doesn't exist
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Add the prompt to the user's history
+    user.history.push(newPrompt);
+
+    // Save the user document in the database
+    await user.save();
+
+    // Respond with a success status
+    res.status(200).send('Prompt added successfully.');
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal server error.');
+  }
+});
+
+
+app.get('/api/user-history', isAuthenticated, async (req, res) => {
+  const userId = req.user.id; // Assuming you have user information in req.user
+
+  // Fetch the user's history from the database based on userId
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      // Handle the case where the user doesn't exist
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userHistory = user.history;
+
+    // Respond with the user's history
+    res.status(200).json(userHistory);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal server error.');
+  }
+});
+
+
 app.get('/dashboard', async (req, res) => {
   if (req.isAuthenticated()) {
     res.json({ user: req.user });
@@ -144,9 +214,22 @@ app.get('/dashboard', async (req, res) => {
   }
 });
 
-app.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+app.get('/logout', async (req, res) => {
+  try {
+    await new Promise((resolve, reject) => {
+      req.logout((err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+
+    res.redirect('http://localhost:3000');
+  } catch (error) {
+    console.error('Error during logout:', error);
+    res.status(500).json({ message: 'Internal server error during logout' });
+  }
 });
 
 // Start the server

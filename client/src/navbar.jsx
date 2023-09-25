@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import { Navbar, Nav, Button, Modal, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios"; // Import Axios
+import axios from "axios";
+import { useAuth } from "./context/AuthContext"; // Adjust the path as needed
 
 const NavbarComponent = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [registrationData, setRegistrationData] = useState({ username: "", password: "" });
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const navigate = useNavigate();
+  const { user, login, logout } = useAuth(); // Access user, login, and logout from the context
 
   const handleLogout = async () => {
     try {
       // Implement logout logic here (e.g., make an API request to log the user out on the server).
-      // After successful logout, update the state.
-      setIsLoggedIn(false);
+      // After successful logout, use the logout function from the context.
+      await axios.get("http://localhost:5000/logout"); // Make a logout API request
+      logout(); // Call the logout function to clear the user state
       navigate("/login"); // Redirect to the login page after logout
     } catch (error) {
       console.error("Error:", error);
@@ -25,10 +27,15 @@ const NavbarComponent = () => {
   const handleRegister = async () => {
     try {
       // Make an API request to register the user
-      const response = await axios.post("http://localhost:5000/register",{username : registrationData.username, password : registrationData.password});
-      console.log(response);
+      const response = await axios.post("http://localhost:5000/register", {
+        username: registrationData.username,
+        password: registrationData.password,
+      });
+
       if (response.status === 200) {
-        setIsLoggedIn(true); // Update the state if registration is successful.
+        // Update the user state in the context if registration is successful.
+        
+        login(response.data.user);
         setShowRegisterModal(false); // Close the modal.
       }
     } catch (error) {
@@ -39,11 +46,16 @@ const NavbarComponent = () => {
   const handleLogin = async () => {
     try {
       // Make an API request to log the user in
-      console.log(loginData);
-      const response = await axios.post("http://localhost:5000/login", {username:loginData.username,password:loginData.password});
-      
+      const response = await axios.post("http://localhost:5000/login", {
+        username: loginData.username,
+        password: loginData.password,
+      });
+
       if (response.status === 200) {
-        setIsLoggedIn(true); // Update the state if login is successful.
+        // Update the user state in the context if login is successful.
+        console.log("User data on successful login:", response.data.user);
+
+        login(response.data.user);
         setShowLoginModal(false); // Close the modal.
       }
     } catch (error) {
@@ -63,7 +75,7 @@ const NavbarComponent = () => {
           <Nav.Link as={Link} to="/">
             Home
           </Nav.Link>
-          {isLoggedIn ? (
+          {user ? (
             <>
               <Nav.Link as={Link} to="/dashboard">
                 Dashboard
@@ -80,6 +92,7 @@ const NavbarComponent = () => {
           )}
         </Nav>
       </Navbar.Collapse>
+
 
       {/* Registration Modal */}
       <Modal show={showRegisterModal} onHide={() => setShowRegisterModal(false)}>

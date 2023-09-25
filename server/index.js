@@ -1,115 +1,155 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import { config } from 'dotenv';
-import OpenAIApi from 'openai';
-import cors from 'cors';
-import mongoose from 'mongoose';
+require('dotenv').config(); // Load environment variables from .env file
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const expressSession = require('express-session');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
-import AbortController from 'abort-controller';
-
-const controller = new AbortController();
-config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-mongoose.connect(process.env.MONGOAUTH, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+// Connect to MongoDB using the MONGOAUTH environment variable
+mongoose.connect(process.env.MONGOAUTH, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
 });
 
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB Atlas');
+// Define a user schema and model
+const User = mongoose.model('User', new mongoose.Schema({
+  username: String,
+  password: String,
+  history: [
+    {
+      title: String,
+      content: String,
+      upvotes: Number,
+      downvotes: Number,
+    },
+  ],
+}));
+
+// Configure passport for user authentication
+passport.use(
+  new LocalStrategy(async (username, password, done) => {
+    try {
+      const user = await User.findOne({ username });
+
+      if (!user) {
+        return done(null, false, { message: 'Invalid username' });
+      }
+
+      if (!(await bcrypt.compare(password, user.password))) {
+        return done(null, false, { message: 'Invalid password' });
+      }
+
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  })
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
 });
 
-const messageSchema = new mongoose.Schema({
-  type: String,
-  content: String,
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
+    done(err, user);
+  });
 });
 
-const Message = mongoose.model('Message', messageSchema);
+// Configure express-session for session management
+app.use(
+  expressSession({
+    secret: process.env.SESSION_SECRET, // Use a secret key from .env
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
+app.use(passport.initialize());
+app.use(passport.session());
 
-const openAi = new OpenAIApi({
-    apiKey: process.env.OPENAI_API_KEY,
-    organizationId: process.env.ORG,
+// Centralized Error Handling
+app.use((err, req, res, next) => {
+  console.error(err);
+
+  // Default to 500 Internal Server Error for unhandled errors
+  const status = err.status || 500;
+  const message = err.message || 'Internal server error';
+
+  res.status(status).json({ message });
 });
 
-async function generateResponseFromOpenAI(inputText) {
+// Define routes for registration, login, and viewing user history
+app.post('/register', async (req, res) => {
   try {
-    const response = await openAi.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'system', content: 'You are a legal advisor bot.' }, { role: 'user', content: inputText }],
-        max_tokens: 1000,
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      throw { status: 400, message: 'Username and password are required' };
+    }
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      throw { status: 400, message: 'Username already exists' };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ username, password: hashedPassword, history: [] });
+
+    await user.save();
+
+    res.status(200).send('User registered successfully.');
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      // Handle error (e.g., database error)
+      console.error(err);
+      return next(err);
+    }
+
+    if (!user) {
+      
+      return next({ status: 401, message: 'Authentication failed' });
+    }
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
+        console.error(loginErr);
+        return next(loginErr);
+      }
+      return res.json({ message: 'Login successful', user: req.user });
     });
-    return response.choices[0].message.content;
-  } catch (error) {
-    console.error('Error generating response:', error.message);
-    throw new Error('An error occurred while generating the response.');
-  }
-}
-
-app.get('/', (req, res) => {
-  res.send('Server is ONN');
+  })(req, res, next); // This middleware is used to authenticate the user
 });
 
-app.post('/generate-response', async (req, res) => {
-  let inputText = req.body.inputText;
- 
-  inputText = inputText + "Give the response of the said query as a legal advisor bot (for india).If you think that the query is serious tell them to find contact to a laywer from the find laywer option. The answer should be strictly under 150 words";
-
-  try {
-    const openaiResponse = await generateResponseFromOpenAI(inputText);
-
-    const userMessage = new Message({
-      type: 'user',
-      content: req.body.inputText,
-    });
-    await userMessage.save();
-
-    const botMessage = new Message({
-      type: 'bot',
-      content: openaiResponse,
-    });
-    await botMessage.save();
-
-
-    res.json({ response: openaiResponse });
-  } catch (error) {
-    console.error('Error generating response:', error.message);
-    res
-      .status(500)
-      .json({ error: 'An error occurred while generating the response.' });
+app.get('/dashboard', async (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ user: req.user });
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
   }
 });
 
-app.delete('/delete-messages', async (req, res) => {
-  try {
-    await Message.deleteMany();
-    res.json({ message: 'All messages deleted successfully.' });
-  } catch (error) {
-    console.error('Error deleting messages:', error.message);
-    res.status(500).json({ error: 'An error occurred while deleting messages.' });
-  }
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
 });
 
-app.get('/get-messages', async (req, res) => {
-  try {
-    const messages = await Message.find();
-    res.json(messages);
-  } catch (error) {
-    console.error('Error fetching messages:', error.message);
-    res.status(500).json({ error: 'An error occurred while fetching messages.' });
-  }
-});
-
-
-
+// Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

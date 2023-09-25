@@ -1,0 +1,36 @@
+.navbar {
+    padding: 0 10px;
+  }
+  
+  .navbar-brand {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .navbar-nav {
+    margin-left: 20px;
+  }
+  
+  .navbar-link {
+    color: white;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .navbar-link:hover {
+    background-color: black;
+    color: white;
+  }
+  @media (max-width: 768px) {
+    .navbar-nav {
+      display: flex;
+      flex-direction: column;
+      margin-left: 0;
+    }
+  
+    .navbar-link {
+      padding: 5px;
+    }
+  }
+    

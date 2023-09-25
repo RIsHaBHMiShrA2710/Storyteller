@@ -45,7 +45,7 @@ const PromptComponent = () => {
           <motion.div
             key={index}
             className="prompt-card"
-            whileHover={{ translateY: -10 }} // Create an overlap effect
+            whileHover={{ translateX: -50 }} // Create an overlap effect
           >
             <div className="prompt-title">
               <h3>{item.title}</h3>

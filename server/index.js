@@ -11,7 +11,11 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+const corsOptions = {
+  origin: 'http://localhost:3000', // Allow requests from any origin
+  credentials: true,
+};
+app.use(cors(corsOptions));               
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -70,10 +74,13 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-  User.findById(id, (err, user) => {
-    done(err, user);
-  });
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
 });
 
 function isAuthenticated(req, res, next) {
@@ -125,16 +132,14 @@ app.post('/register', async (req, res) => {
   }
 });
 
-app.post('/login', (req, res, next) => {
+app.post('/login',async (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) {
-      // Handle error (e.g., database error)
       console.error(err);
       return next(err);
     }
 
     if (!user) {
-
       return next({ status: 401, message: 'Authentication failed' });
     }
     req.logIn(user, (loginErr) => {
@@ -144,7 +149,7 @@ app.post('/login', (req, res, next) => {
       }
       return res.json({ message: 'Login successful', user: req.user });
     });
-  })(req, res, next); // This middleware is used to authenticate the user
+  })(req, res, next);
 });
 
 app.post('/api/add-prompt', isAuthenticated, async (req, res) => {
@@ -208,13 +213,14 @@ app.get('/api/user-history', isAuthenticated, async (req, res) => {
 
 app.get('/dashboard', async (req, res) => {
   if (req.isAuthenticated()) {
+    console.log(req.user);
     res.json({ user: req.user });
   } else {
     res.status(401).json({ message: 'Unauthorized' });
   }
 });
 
-app.get('/logout', async (req, res) => {
+app.get('/logout',cors(corsOptions), async (req, res) => {
   try {
     await new Promise((resolve, reject) => {
       req.logout((err) => {
@@ -225,12 +231,17 @@ app.get('/logout', async (req, res) => {
       });
     });
 
-    res.redirect('http://localhost:3000');
+    // Set the CORS headers for the origin of your frontend app and allow credentials
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
     console.error('Error during logout:', error);
     res.status(500).json({ message: 'Internal server error during logout' });
   }
 });
+
 
 // Start the server
 app.listen(port, () => {

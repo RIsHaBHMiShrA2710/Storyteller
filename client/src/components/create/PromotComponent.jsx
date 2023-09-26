@@ -14,11 +14,7 @@ const PromptComponent = () => {
   const [prompts, setPrompts] = useState([]);
   axios.defaults.withCredentials = true;
 
-  useEffect(() => {
-    // Fetch user's history when the component mounts
-    fetchUserHistory();
-  }, []);
-
+  
   const fetchUserHistory = async () => {
     try {
       // Make a GET request to fetch the user's history
@@ -31,6 +27,11 @@ const PromptComponent = () => {
       console.error('Error fetching user history:', error);
     }
   };
+  useEffect(() => {
+    // Fetch user's history when the component mounts
+    console.log(user);
+    fetchUserHistory();
+  }, []);
 
   const handleAddPrompt = async () => {
     if (title.trim() !== '' && story.trim() !== '') {

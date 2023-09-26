@@ -16,9 +16,16 @@ const NavbarComponent = () => {
     try {
       // Implement logout logic here (e.g., make an API request to log the user out on the server).
       // After successful logout, use the logout function from the context.
-      await axios.get("http://localhost:5000/logout"); // Make a logout API request
-      logout(); // Call the logout function to clear the user state
-      navigate("/login"); // Redirect to the login page after logout
+      axios.get('http://localhost:5000/logout', { withCredentials: true })
+      .then(() => {
+        console.log(user);
+        logout(); // Call the logout function to clear the user state
+        navigate("/login"); // Redirect to the login page after logout
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+      
     } catch (error) {
       console.error("Error:", error);
     }
@@ -30,11 +37,10 @@ const NavbarComponent = () => {
       const response = await axios.post("http://localhost:5000/register", {
         username: registrationData.username,
         password: registrationData.password,
-      });
-
+      }); // Include withCredentials option
+  
       if (response.status === 200) {
         // Update the user state in the context if registration is successful.
-        
         login(response.data.user);
         setShowRegisterModal(false); // Close the modal.
       }
@@ -42,19 +48,18 @@ const NavbarComponent = () => {
       console.error("Error:", error);
     }
   };
-
+  
   const handleLogin = async () => {
     try {
       // Make an API request to log the user in
       const response = await axios.post("http://localhost:5000/login", {
         username: loginData.username,
         password: loginData.password,
-      });
-
+      }, { withCredentials: true }); // Include withCredentials option
+  
       if (response.status === 200) {
         // Update the user state in the context if login is successful.
         console.log("User data on successful login:", response.data.user);
-
         login(response.data.user);
         setShowLoginModal(false); // Close the modal.
       }
@@ -63,7 +68,7 @@ const NavbarComponent = () => {
       console.error("Error:", error);
     }
   };
-
+  
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Navbar.Brand as={Link} to="/">

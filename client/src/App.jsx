@@ -1,6 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import SegmentControl from "./components/segcontrols/SegmentControl";
 import PromptComponent from "./components/create/PromotComponent";
 import Navbar from "./navbar";
 function App() {
@@ -8,9 +7,8 @@ function App() {
     <>
       <Router>
         <Navbar />
-        <SegmentControl />
             <Routes>
-                <Route path="/create" element={<PromptComponent/>} />
+                <Route path="/" element={<PromptComponent/>} />
              </Routes>
             
         </Router>

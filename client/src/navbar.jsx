@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { Navbar, Nav, Button, Modal, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -37,7 +38,8 @@ const NavbarComponent = () => {
       const response = await axios.post("http://localhost:5000/register", {
         username: registrationData.username,
         password: registrationData.password,
-      }); // Include withCredentials option
+
+      }, { withCredentials: true }); // Include withCredentials option
   
       if (response.status === 200) {
         // Update the user state in the context if registration is successful.

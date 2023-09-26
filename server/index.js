@@ -153,13 +153,13 @@ app.post('/login',async (req, res, next) => {
 });
 
 app.post('/api/add-prompt', isAuthenticated, async (req, res) => {
-  const { title, story } = req.body;
+  const { title, content} = req.body;
   const userId = req.user.id; // Assuming you have user information in req.user
 
   // Create a new prompt object
   const newPrompt = {
     title,
-    story,
+    content,
     upvotes: 0,
     downvotes: 0,
   };

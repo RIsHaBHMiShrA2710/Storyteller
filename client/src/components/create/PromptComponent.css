@@ -32,19 +32,6 @@
     border-radius: 3px;
   }
   
-  button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 3px;
-    cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
   .history-container {
     margin-top: 20px;
   }
@@ -55,7 +42,6 @@
     margin: unset;
     padding: 5px;
   }
-  
   ul {
     list-style: none;
     padding: 0;
@@ -88,25 +74,58 @@
   margin-top: 10px;
 }
 .prompt-card p{
+  display: flex;
   font-family: 'Poppins', sans-serif;
   font-family: 'Stylish', sans-serif;
+  color: #333;
 }
 
 .prompt-title {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   font-family: 'Poppins', sans-serif;
   font-family: 'Stylish', sans-serif;
 }
-.read-more-link {
+.voting-buttons{
   position: absolute;
+  display: flex;
+  flex-direction: column;
   top: 0;
   right: 0;
+}
+.delete-button {
+  background-color: whitesmoke;
+  border: none;
+  color: rgb(182, 99, 99);
+  width: fit-content;
+  border-radius: 50%;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  margin:4px 4px;
+  transition: 0.2s;
+}
+.delete-button:hover{
+  transform: scale(1.2);
+}
+
+.voting-button{
+  border: none;
+  color: rgb(99, 91, 91);
+  width: fit-content;
+  height: auto;
+  text-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  background-color: white;
+  margin:4px 4px;
+  transition: 0.3s;
+}
+.voting-button:hover{
+  color:#312828;
+  transform: scale(1.2);
+}
+.read-more-link {
+  position: relative;
   padding: 10px;
   background-color: #007bff;
   color: #fff;
-  border-radius: 0 5px 0 5px;
   text-decoration: none;
 }
 

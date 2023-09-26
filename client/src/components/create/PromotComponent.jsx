@@ -60,9 +60,26 @@ const PromptComponent = () => {
     // You can make a POST request to your server to update the downvotes
   };
   const handleDelete = async (index) => {
-    // Handle downvote logic here and update the prompts state
-    // You can make a POST request to your server to update the downvotes
+    // Retrieve the story ID from the prompts state
+    const storyIdToDelete = prompts[index]._id;
+
+    try {
+      // Make a DELETE request to delete the story by ID
+      const response = await axios.delete(`http://localhost:5000/api/delete-story/${storyIdToDelete}`, { withCredentials: true });
+
+      if (response.status === 200) {
+        // Remove the deleted story from the prompts state
+        const updatedPrompts = [...prompts];
+        updatedPrompts.splice(index, 1);
+        setPrompts(updatedPrompts);
+      } else {
+        console.error('Failed to delete story.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
+
 
   return (
     <div className="prompt-container">
@@ -98,7 +115,7 @@ const PromptComponent = () => {
           <motion.div
             key={index}
             className="prompt-card"
-            whileHover={{ translateY: -80}}
+            whileHover={{ translateY: -20 }}
           >
             <div className="prompt-title">
               <Link to={`/full-story/${index}`} className="read-more-link">
@@ -110,13 +127,14 @@ const PromptComponent = () => {
                 <button className='delete-button' onClick={() => handleDelete(index)}>
                   <FontAwesomeIcon icon={faTrashCan} />
                 </button>
+
                 <button className='voting-button' onClick={() => handleUpvote(index)}>
                   <FontAwesomeIcon icon={faThumbsUp} />({item.upvotes})
                 </button>
                 <button className='voting-button' onClick={() => handleDownvote(index)}>
                   <FontAwesomeIcon icon={faThumbsDown} /> ({item.downvotes})
                 </button>
-
+                
               </div>
 
             </div>

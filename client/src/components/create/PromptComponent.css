@@ -74,6 +74,7 @@
   margin-top: 10px;
 }
 .prompt-card p{
+  width: 80%;
   display: flex;
   font-family: 'Poppins', sans-serif;
   font-family: 'Stylish', sans-serif;

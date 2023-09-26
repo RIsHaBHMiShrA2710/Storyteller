@@ -242,6 +242,29 @@ app.get('/logout',cors(corsOptions), async (req, res) => {
   }
 });
 
+// Delete a story by ID
+app.delete('/api/delete-story/:storyId', isAuthenticated, async (req, res) => {
+  const userId = req.user.id;
+  const storyId = req.params.storyId;
+
+  try {
+    // Remove the story from the user's history by updating the user document
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { history: { _id: storyId } } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Story deleted successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal server error.');
+  }
+});
 
 // Start the server
 app.listen(port, () => {

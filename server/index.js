@@ -43,11 +43,26 @@ const User = mongoose.model('User', new mongoose.Schema({
     {
       title: String,
       content: String,
-      upvotes: Number,
-      downvotes: Number,
+      upvotes: [
+        {
+          userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+          },
+        },
+      ],
+      downvotes:[
+        {
+          userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+          },
+        },
+      ],
     },
   ],
 }));
+
 
 // Configure passport for user authentication
 passport.use(
@@ -84,10 +99,6 @@ passport.deserializeUser(async (id, done) => {
 });
 
 function isAuthenticated(req, res, next) {
-  console.log('isAuthenticated middleware called');
-  console.log(req.user);
-  console.log('req.isAuthenticated():', req.isAuthenticated());
-
   if (req.isAuthenticated()) {
     return next();
   }
@@ -160,8 +171,8 @@ app.post('/api/add-prompt', isAuthenticated, async (req, res) => {
   const newPrompt = {
     title,
     content,
-    upvotes: 0,
-    downvotes: 0,
+    upvotes: [],
+    downvotes: [],
   };
 
   try {
@@ -186,7 +197,67 @@ app.post('/api/add-prompt', isAuthenticated, async (req, res) => {
     res.status(500).send('Internal server error.');
   }
 });
+app.post('/api/upvote-story/:storyId', isAuthenticated, async (req, res) => {
+  const userId = req.user.id; // Assuming you have user information in req.user
+  const storyId = req.params.storyId;
 
+  // Check if the user exists
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  // Check if the story exists in the user's history
+  const storyIndex = user.history.findIndex((story) => story._id.toString() === storyId); // Convert to string for comparison
+  if (storyIndex === -1) {
+    return res.status(404).json({ message: 'Story not found in user history' });
+  }
+
+  // Check if the user has already upvoted this story
+  const hasUpvoted = user.history[storyIndex].upvotes.some((upvote) => upvote.userId.toString() === userId); // Convert to string for comparison
+  if (hasUpvoted) {
+    return res.status(400).json({ message: 'User has already upvoted this story' });
+  }
+
+  // Add the user's ID to the story's upvotes array
+  user.history[storyIndex].upvotes.push({ userId });
+
+  // Save changes to the database
+  await user.save();
+
+  res.status(200).json({ message: 'Story upvoted successfully' });
+});
+
+app.post('/api/downvote-story/:storyId', isAuthenticated, async (req, res) => {
+  const userId = req.user.id; // Assuming you have user information in req.user
+  const storyId = req.params.storyId;
+
+  // Check if the user exists
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  // Check if the story exists in the user's history
+  const storyIndex = user.history.findIndex((story) => story._id.toString() === storyId); // Convert to string for comparison
+  if (storyIndex === -1) {
+    return res.status(404).json({ message: 'Story not found in user history' });
+  }
+
+  // Check if the user has already upvoted this story
+  const hasDownvoted = user.history[storyIndex].downvotes.some((downvote) => downvote.userId.toString() === userId); // Convert to string for comparison
+  if (hasDownvoted) {
+    return res.status(400).json({ message: 'User has already upvoted this story' });
+  }
+
+  // Add the user's ID to the story's upvotes array
+  user.history[storyIndex].downvotes.push({ userId });
+
+  // Save changes to the database
+  await user.save();
+
+  res.status(200).json({ message: 'Story upvoted successfully' });
+});
 
 app.get('/api/user-history', isAuthenticated, async (req, res) => {
   const userId = req.user.id; // Assuming you have user information in req.user

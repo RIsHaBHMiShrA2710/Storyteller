@@ -12,6 +12,9 @@ const PromptComponent = () => {
   const [title, setTitle] = useState('');
   const [story, setStory] = useState('');
   const [prompts, setPrompts] = useState([]);
+  const [upvotedStories, setUpvotedStories] = useState([]);
+  const [downvotedStories, setDownvotedStories] = useState([]);
+
   axios.defaults.withCredentials = true;
 
   const fetchUserHistory = async () => {
@@ -51,13 +54,53 @@ const PromptComponent = () => {
   };
 
   const handleUpvote = async (index) => {
-    // Handle upvote logic here and update the prompts state
-    // You can make a POST request to your server to update the upvotes
+    const storyIdToUpvote = prompts[index]._id;
+  
+    if (!upvotedStories.includes(storyIdToUpvote)) {
+      try {
+        // Make a POST request to update the upvotes on the server
+        const response = await axios.post(
+          `http://localhost:5000/api/upvote-story/${storyIdToUpvote}`,
+          { withCredentials: true }
+        );
+  
+        if (response.status === 200) {
+          // Update the state to reflect that the user has upvoted this story
+          setUpvotedStories([...upvotedStories, storyIdToUpvote]);
+          fetchUserHistory();
+        } else {
+          console.error('Failed to upvote story.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
   };
+  
 
   const handleDownvote = async (index) => {
-    // Handle downvote logic here and update the prompts state
-    // You can make a POST request to your server to update the downvotes
+
+    const storyIdToDownvote = prompts[index]._id;
+  
+    if (!downvotedStories.includes(storyIdToDownvote)) {
+      try {
+        // Make a POST request to update the downvotes on the server
+        const response = await axios.post(
+          `http://localhost:5000/api/downvote-story/${storyIdToDownvote}`,
+          { withCredentials: true }
+        );
+  
+        if (response.status === 200) {
+          // Update the state to reflect that the user has upvoted this story
+          setDownvotedStories([...downvotedStories, storyIdToDownvote]);
+          fetchUserHistory();
+        } else {
+          console.error('Failed to upvote story.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
   };
   const handleDelete = async (index) => {
     // Retrieve the story ID from the prompts state
@@ -129,10 +172,11 @@ const PromptComponent = () => {
                 </button>
 
                 <button className='voting-button' onClick={() => handleUpvote(index)}>
-                  <FontAwesomeIcon icon={faThumbsUp} />({item.upvotes})
+                  <FontAwesomeIcon icon={faThumbsUp} />({item.upvotes.length})
                 </button>
+
                 <button className='voting-button' onClick={() => handleDownvote(index)}>
-                  <FontAwesomeIcon icon={faThumbsDown} /> ({item.downvotes})
+                  <FontAwesomeIcon icon={faThumbsDown} /> ({item.downvotes.length})
                 </button>
                 
               </div>

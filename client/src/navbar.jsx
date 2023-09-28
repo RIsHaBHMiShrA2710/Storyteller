@@ -21,7 +21,8 @@ const NavbarComponent = () => {
       .then(() => {
         console.log(user);
         logout(); // Call the logout function to clear the user state
-        navigate("/login"); // Redirect to the login page after logout
+        navigate("/"); // Redirect to the login page after logout
+        window.location.reload();
       })
       .catch((error) => {
         console.error(error);
@@ -45,6 +46,7 @@ const NavbarComponent = () => {
         // Update the user state in the context if registration is successful.
         login(response.data.user);
         setShowRegisterModal(false); // Close the modal.
+        window.location.reload();
       }
     } catch (error) {
       console.error("Error:", error);
@@ -64,6 +66,7 @@ const NavbarComponent = () => {
         console.log("User data on successful login:", response.data.user);
         login(response.data.user);
         setShowLoginModal(false); // Close the modal.
+        window.location.reload();
       }
     } catch (error) {
       alert("Please try again with valid username and password");
@@ -93,8 +96,8 @@ const NavbarComponent = () => {
             </>
           ) : (
             <>
-              <Nav.Link onClick={() => setShowRegisterModal(true)}>Register</Nav.Link>
-              <Nav.Link onClick={() => setShowLoginModal(true)}>Login</Nav.Link>
+              <Nav.Link as={Link} to="/" onClick={() => setShowRegisterModal(true)}>Register</Nav.Link>
+              <Nav.Link as={Link} to="/" onClick={() => setShowLoginModal(true)}>Login</Nav.Link>
             </>
           )}
         </Nav>

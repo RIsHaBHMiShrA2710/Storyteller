@@ -1,0 +1,44 @@
+.ranking-container{
+    padding: 100px 0px;
+    background-image: url("https://png.pngtree.com/background/20210715/original/pngtree-blue-purple-universe-galaxy-gradient-background-picture-image_1309027.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.ranking-container h2{
+    color: white;
+    margin-bottom: 40px;
+}
+.story-container{
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff78;
+  color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 80%;
+  margin: 0 auto;
+  align-items: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.story-card{
+  background-color: #fff;
+  min-height: fit-content;
+  width: 80%;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px 0;
+  transition: transform 0.2s;
+  cursor: pointer;
+  position: relative;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+}
+.story-card p {
+    width: 80%;
+    display: flex;
+    font-family: 'Poppins', sans-serif;
+    font-family: 'Stylish', sans-serif;
+    color: #333;
+  }

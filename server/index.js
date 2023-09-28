@@ -32,7 +32,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-// Configure express-session for session management
 // Centralized Error Handling
 app.use((err, req, res, next) => {
   console.error(err);
@@ -68,6 +67,7 @@ app.get('/api/user-history', isAuthenticated, storyController.getUserHistory);
 // Delete a story by ID
 app.delete('/api/delete-story/:storyId', isAuthenticated, storyController.deleteStory);
 
+app.get('/api/all-stories' , storyController.getAllStories);
 
 app.get('/dashboard', async (req, res) => {
   if (req.isAuthenticated()) {

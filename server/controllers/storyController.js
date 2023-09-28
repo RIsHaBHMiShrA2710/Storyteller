@@ -123,6 +123,38 @@ exports.getUserHistory = async (req, res) => {
     }
 };
 
+
+exports.getAllStories = async (req, res) => {
+    try {
+      // Fetch all stories from the database with user ID and username
+      const usersWithStories = await User.find(
+        { 'history.0': { $exists: true } }, // Filter users with non-empty history
+        '_id username history.title history.content history.upvotes history.downvotes'
+      );
+  
+      // Use concat to merge sub-arrays into a single array
+      const stories = [].concat(
+        ...usersWithStories.map(user => {
+          return user.history.map(story => {
+            return {
+              _id: user._id,
+              username: user.username,
+              title: story.title,
+              content: story.content,
+              upvotes: story.upvotes,
+              downvotes: story.downvotes,
+            };
+          });
+        })
+      );
+  
+      res.status(200).json(stories);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+  
 // Delete a story by ID
 exports.deleteStory = async (req, res) => {
     const userId = req.user.id;

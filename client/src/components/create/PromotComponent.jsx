@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowCircleRight, faThumbsUp, faThumbsDown, faArrowUpAZ, faTrashCan } from '@fortawesome/free-solid-svg-icons'; // Import the upvote and downvote icons
+import { faArrowCircleRight, faThumbsUp, faThumbsDown, faTrashCan } from '@fortawesome/free-solid-svg-icons'; // Import the upvote and downvote icons
 import './PromptComponent.css';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';

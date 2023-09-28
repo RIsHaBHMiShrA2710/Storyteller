@@ -65,7 +65,7 @@ const NavbarComponent = () => {
         // Update the user state in the context if login is successful.
         console.log("User data on successful login:", response.data.user);
         login(response.data.user);
-        setShowLoginModal(false); // Close the modal.
+        setShowLoginModal(false); 
         window.location.reload();
       }
     } catch (error) {

@@ -55,7 +55,7 @@ const PromptComponent = () => {
 
   const handleUpvote = async (index) => {
     const storyIdToUpvote = prompts[index]._id;
-  
+
     if (!upvotedStories.includes(storyIdToUpvote)) {
       try {
         // Make a POST request to update the upvotes on the server
@@ -63,7 +63,7 @@ const PromptComponent = () => {
           `http://localhost:5000/api/upvote-story/${storyIdToUpvote}`,
           { withCredentials: true }
         );
-  
+
         if (response.status === 200) {
           // Update the state to reflect that the user has upvoted this story
           setUpvotedStories([...upvotedStories, storyIdToUpvote]);
@@ -76,12 +76,12 @@ const PromptComponent = () => {
       }
     }
   };
-  
+
 
   const handleDownvote = async (index) => {
 
     const storyIdToDownvote = prompts[index]._id;
-  
+
     if (!downvotedStories.includes(storyIdToDownvote)) {
       try {
         // Make a POST request to update the downvotes on the server
@@ -89,7 +89,7 @@ const PromptComponent = () => {
           `http://localhost:5000/api/downvote-story/${storyIdToDownvote}`,
           { withCredentials: true }
         );
-  
+
         if (response.status === 200) {
           // Update the state to reflect that the user has upvoted this story
           setDownvotedStories([...downvotedStories, storyIdToDownvote]);
@@ -125,67 +125,67 @@ const PromptComponent = () => {
 
 
   return (
-    <div className="prompt-container">
-      <h2>Prompt Component</h2>
+    <div className='home-background'>
+      <div className="prompt-container">
+        <h2>Generate your Story</h2>
 
-      {user && (
-        <div className="user-info">
-          <p>Welcome, {user.username}!</p>
+        {user && (
+          <div className="user-info">
+            <p>Welcome, {user.username}!</p>
+          </div>
+        )}
+
+        <div className="input-container">
+          <label htmlFor="titleInput">Title:</label>
+          <input
+            type="text"
+            id="titleInput"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <label htmlFor="storyInput">Story:</label>
+          <textarea
+            id="storyInput"
+            value={story}
+            onChange={(e) => setStory(e.target.value)}
+          />
         </div>
-      )}
+        <button className='prompt-button' onClick={handleAddPrompt}>Generate Story</button>
 
-      <div className="input-container">
-        <label htmlFor="titleInput">Title:</label>
-        <input
-          type="text"
-          id="titleInput"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
-      <div className="input-container">
-        <label htmlFor="storyInput">Story:</label>
-        <textarea
-          id="storyInput"
-          value={story}
-          onChange={(e) => setStory(e.target.value)}
-        />
-      </div>
-      <button onClick={handleAddPrompt}>Add Prompt</button>
+        <div className="history-container">
+          {prompts.map((item, index) => (
+            <motion.div
+              key={index}
+              className="prompt-card"
+              whileHover={{ translateY: -20 }}
+            >
+              <div className="prompt-title">
+                <Link to={`/full-story/${index}`} className="read-more-link">
+                  <FontAwesomeIcon icon={faArrowCircleRight} />
+                </Link>
+                <h3>{item.title}</h3>
 
-      <div className="prompts-container">
-        {prompts.map((item, index) => (
-          <motion.div
-            key={index}
-            className="prompt-card"
-            whileHover={{ translateY: -20 }}
-          >
-            <div className="prompt-title">
-              <Link to={`/full-story/${index}`} className="read-more-link">
-                <FontAwesomeIcon icon={faArrowCircleRight} />
-              </Link>
-              <h3>{item.title}</h3>
+                <div className="voting-buttons">
+                  <button className='delete-button' onClick={() => handleDelete(index)}>
+                    <FontAwesomeIcon icon={faTrashCan} />
+                  </button>
 
-              <div className="voting-buttons">
-                <button className='delete-button' onClick={() => handleDelete(index)}>
-                  <FontAwesomeIcon icon={faTrashCan} />
-                </button>
+                  <button className='voting-button' onClick={() => handleUpvote(index)}>
+                    <FontAwesomeIcon icon={faThumbsUp} />({item.upvotes.length})
+                  </button>
 
-                <button className='voting-button' onClick={() => handleUpvote(index)}>
-                  <FontAwesomeIcon icon={faThumbsUp} />({item.upvotes.length})
-                </button>
+                  <button className='voting-button' onClick={() => handleDownvote(index)}>
+                    <FontAwesomeIcon icon={faThumbsDown} /> ({item.downvotes.length})
+                  </button>
 
-                <button className='voting-button' onClick={() => handleDownvote(index)}>
-                  <FontAwesomeIcon icon={faThumbsDown} /> ({item.downvotes.length})
-                </button>
-                
+                </div>
+
               </div>
+              <p>{item.content}</p>
 
-            </div>
-            <p>{item.content}</p>
-
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

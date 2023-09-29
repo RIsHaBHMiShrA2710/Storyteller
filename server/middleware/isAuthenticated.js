@@ -5,4 +5,4 @@ const isAuthenticated = (req, res, next) => {
     res.status(401).json({ message: 'Authentication required' });
   };
   
-  module.exports = isAuthenticated;
+  module.exports = isAuthenticated; 

@@ -49,7 +49,12 @@ const PromptComponent = () => {
           console.error('Failed to add prompt.');
         }
       } catch (error) {
-        console.error('Error:', error);
+        if (error.response && error.response.status === 401) {
+          // User is not authenticated, show alert
+          alert('Please log in or register to Generate a story.');
+        } else {
+          console.error('Error:', error);
+        }
       }
     }
   };

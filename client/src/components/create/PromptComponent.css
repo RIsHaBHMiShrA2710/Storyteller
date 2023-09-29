@@ -190,4 +190,12 @@ li {
   letter-spacing: 1px;
   margin: 10px 4px;
   border-radius: 10px;
+  transition: 0.3s;
+}
+.prompt-button:active{
+  background-color: #333;
+}
+.prompt-button:hover{
+  transform: scale(1.2);
+  background-color: #333;
 }

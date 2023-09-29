@@ -85,11 +85,11 @@ const NavbarComponent = () => {
           <Nav.Link as={Link} to="/">
             Home
           </Nav.Link>
+          <Nav.Link as={Link} to="/global-ranking">
+            Global ranking
+          </Nav.Link>
           {user ? (
             <>
-              <Nav.Link as={Link} to="/dashboard">
-                Dashboard
-              </Nav.Link>
               <Button variant="link" onClick={handleLogout}>
                 Logout
               </Button>

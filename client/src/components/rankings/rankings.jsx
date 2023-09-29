@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowCircleRight, faThumbsUp, faThumbsDown, faTrashCan } from '@fortawesome/free-solid-svg-icons';
@@ -53,13 +52,20 @@ const RankingComponent = () => {
         if (response.status === 200) {
           // Update the state to reflect that the user has upvoted this story
           setUpvotedStories([...upvotedStories, storyIdToUpvote]);
-          // Fetch rankings again to update the list
           fetchRankings();
+        }else if (response.status === 401) {
+          // User is not authenticated, show alert
+          alert('Please log in or register to upvote.');
         } else {
           console.error('Failed to upvote story.');
         }
       } catch (error) {
-        console.error('Error:', error);
+        if (error.response && error.response.status === 401) {
+          // User is not authenticated, show alert
+          alert('Please log in or register to upvote.');
+        } else {
+          console.error('Error:', error);
+        }
       }
     }
   };
@@ -85,7 +91,12 @@ const RankingComponent = () => {
           console.error('Failed to downvote story.');
         }
       } catch (error) {
-        console.error('Error:', error);
+        if (error.response && error.response.status === 401) {
+          // User is not authenticated, show alert
+          alert('Please log in or register to upvote.');
+        } else {
+          console.error('Error:', error);
+        }
       }
     }
   };
@@ -97,7 +108,7 @@ const RankingComponent = () => {
         {stories.map((item, index) => (
           <div className="story-card" key={index}>
             <div className="prompt-title">
-              <Link to={`/full-story/${index}`} className="read-more-link">
+              <Link to={`/full-story/${item._id}`} className="read-more-link">
                 <FontAwesomeIcon icon={faArrowCircleRight} />
               </Link>
               <h3>{item.title}</h3>

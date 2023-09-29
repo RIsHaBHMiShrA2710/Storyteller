@@ -1,0 +1,26 @@
+.individual-container{
+    padding: 100px 0px;
+    background-image: url("https://png.pngtree.com/background/20210715/original/pngtree-blue-purple-universe-galaxy-gradient-background-picture-image_1309027.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.individual-story{
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffffcb;
+  color: #000000;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.individual-line{
+    width: 100%;
+    font-size: 1.2rem;
+    color: #000000;
+
+}

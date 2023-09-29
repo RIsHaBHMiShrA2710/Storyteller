@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowCircleRight, faThumbsUp, faThumbsDown, faTrashCan } from '@fortawesome/free-solid-svg-icons'; // Import the upvote and downvote icons
 import './PromptComponent.css';
 import axios from 'axios';
+import TruncateText from './truncateText';
 import { useAuth } from '../../context/AuthContext';
 
 const PromptComponent = () => {
@@ -68,6 +69,9 @@ const PromptComponent = () => {
           // Update the state to reflect that the user has upvoted this story
           setUpvotedStories([...upvotedStories, storyIdToUpvote]);
           fetchUserHistory();
+        }else if (response.status === 401) {
+          // User is not authenticated, show alert
+          alert('Please log in or register to upvote.');
         } else {
           console.error('Failed to upvote story.');
         }
@@ -123,7 +127,6 @@ const PromptComponent = () => {
     }
   };
 
-
   return (
     <div className='home-background'>
       <div className="prompt-container">
@@ -160,7 +163,7 @@ const PromptComponent = () => {
               whileHover={{ translateY: -20 }}
             >
               <div className="prompt-title">
-                <Link to={`/full-story/${index}`} className="read-more-link">
+                <Link to={`/full-story/${item._id}`} className="read-more-link">
                   <FontAwesomeIcon icon={faArrowCircleRight} />
                 </Link>
                 <h3>{item.title}</h3>
@@ -181,7 +184,8 @@ const PromptComponent = () => {
                 </div>
 
               </div>
-              <p>{item.content}</p>
+              <TruncateText text={item.content} maxWords={20} />
+
 
             </motion.div>
           ))}

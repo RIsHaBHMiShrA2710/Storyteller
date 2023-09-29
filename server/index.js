@@ -69,6 +69,9 @@ app.delete('/api/delete-story/:storyId', isAuthenticated, storyController.delete
 
 app.get('/api/all-stories' , storyController.getAllStories);
 
+app.get('/api/full-story/:storyId', storyController.fullStory);
+
+
 app.get('/dashboard', async (req, res) => {
   if (req.isAuthenticated()) {
     console.log(req.user);

@@ -1,7 +1,7 @@
-const passport = require('passport');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { hashPassword } = require('../utils/passwordUtils');
 const User = require("../models/user");
-const passportConfig = require('../config/passportConfig'); // Import your Passport configuration
 
 // Register a new user
 exports.registerUser = async (req, res) => {
@@ -22,55 +22,32 @@ exports.registerUser = async (req, res) => {
         const user = new User({ username, password: hashedPassword, history: [] });
         await user.save();
 
-        res.status(200).send('User registered successfully.');
+        // Create and sign a JWT token
+        const jwtToken = jwt.sign({ userId: user._id }, 'your-secret-key', { expiresIn: '3d' });
+
+        res.status(200).json({ message: 'User registered successfully.', jwtToken, user });
     } catch (error) {
         // Inside the catch block of registerUser
         console.error(error);
         res.status(error.status || 500).json({ message: error.message || 'Internal server error' });
-
     }
 };
-
 // Login user
-exports.loginUser = (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
-        if (err) {
-            console.error(err);
-            return next(err);
-        }
+exports.loginUser = async (req, res) => {
+    const { username, password } = req.body;
 
-        if (!user) {
-            return next({ status: 401, message: 'Authentication failed' });
-        }
-        req.logIn(user, (loginErr) => {
-            if (loginErr) {
-                console.error(loginErr);
-                return next(loginErr);
-            }
-            return res.json({ message: 'Login successful', user: req.user });
-        });
-    })(req, res, next);
-};
-
-// Logout user
-exports.logoutUser = async (req, res) => {
     try {
-        await new Promise((resolve, reject) => {
-            req.logout((err) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            });
-        });
+        const user = await User.findOne({ username });
 
-        // Set the CORS headers for the origin of your frontend app and allow credentials
-        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            throw { status: 401, message: 'Authentication failed' };
+        }
 
-        res.status(200).json({ message: 'Logout successful' });
+        // Create and sign a JWT token
+        const jwtToken = jwt.sign({ userId: user._id }, 'your-secret-key', { expiresIn: '3d' });
+
+        res.status(200).json({ message: 'Login successful', jwtToken, user});
     } catch (error) {
-        console.error('Error during logout:', error);
-        res.status(500).json({ message: 'Internal server error during logout' });
+        res.status(error.status || 500).json({ message: error.message || 'Internal server error' });
     }
 };

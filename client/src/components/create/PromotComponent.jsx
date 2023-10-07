@@ -2,44 +2,75 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowCircleRight, faThumbsUp, faThumbsDown, faTrashCan } from '@fortawesome/free-solid-svg-icons'; // Import the upvote and downvote icons
+import {
+  faArrowCircleRight,
+  faThumbsUp,
+  faThumbsDown,
+  faTrashCan,
+} from '@fortawesome/free-solid-svg-icons';
 import './PromptComponent.css';
 import axios from 'axios';
 import TruncateText from './truncateText';
 import { useAuth } from '../../context/AuthContext';
 
 const PromptComponent = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Access the user and logout function from the context
   const [title, setTitle] = useState('');
   const [story, setStory] = useState('');
   const [prompts, setPrompts] = useState([]);
   const [upvotedStories, setUpvotedStories] = useState([]);
   const [downvotedStories, setDownvotedStories] = useState([]);
 
-  axios.defaults.withCredentials = true;
 
   const fetchUserHistory = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/user-history');
+      if (!user) return;
+      const authToken = `${JSON.parse(localStorage.getItem('user')).token}`;
+      console.log(authToken);
+      console.log(user);
+  
+      const response = await axios.get('http://localhost:5000/api/user-history', {
+        headers: {
+          Authorization: authToken,
+        },
+      });
 
       if (response.status === 200) {
         setPrompts(response.data);
       }
     } catch (error) {
       console.error('Error fetching user history:', error);
+  
+      // Handle token expiration (401 Unauthorized)
+      if (error.response && error.response.status === 401) {
+        alert('Your session has expired. Please log in again.');
+        logout(); // Call your logout function to clear user state
+        // Redirect to the login page
+        // Navigate to your login page using your router's navigation method
+        // Example: navigate("/login");
+      }
     }
   };
+  
 
   useEffect(() => {
-    console.log(user);
     fetchUserHistory();
-  }, []);
+  }, [user]);
 
   const handleAddPrompt = async () => {
     if (title.trim() !== '' && story.trim() !== '') {
       try {
-        console.log(user);
-        const response = await axios.post('http://localhost:5000/api/add-prompt', { title, content: story, user }, { withCredentials: true });
+        const authToken = `${user.token}`;
+
+        const response = await axios.post(
+          'http://localhost:5000/api/add-prompt',
+          { title, content: story },
+          {
+            headers: {
+              Authorization: authToken,
+            },
+          }
+        );
 
         if (response.status === 200) {
           fetchUserHistory();
@@ -51,7 +82,7 @@ const PromptComponent = () => {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           // User is not authenticated, show alert
-          alert('Please log in or register to Generate a story.');
+          alert('Please log in or register to generate a story.');
         } else {
           console.error('Error:', error);
         }
@@ -64,17 +95,23 @@ const PromptComponent = () => {
 
     if (!upvotedStories.includes(storyIdToUpvote)) {
       try {
-        // Make a POST request to update the upvotes on the server
+        const authToken = `${user.token}`;
+
         const response = await axios.post(
           `http://localhost:5000/api/upvote-story/${storyIdToUpvote}`,
-          { withCredentials: true }
+          {},
+          {
+            headers: {
+              Authorization: authToken,
+            },
+          }
         );
 
         if (response.status === 200) {
           // Update the state to reflect that the user has upvoted this story
           setUpvotedStories([...upvotedStories, storyIdToUpvote]);
           fetchUserHistory();
-        }else if (response.status === 401) {
+        } else if (response.status === 401) {
           // User is not authenticated, show alert
           alert('Please log in or register to upvote.');
         } else {
@@ -86,38 +123,53 @@ const PromptComponent = () => {
     }
   };
 
-
   const handleDownvote = async (index) => {
-
     const storyIdToDownvote = prompts[index]._id;
 
     if (!downvotedStories.includes(storyIdToDownvote)) {
       try {
-        // Make a POST request to update the downvotes on the server
+        const authToken = `${user.token}`;
+
         const response = await axios.post(
           `http://localhost:5000/api/downvote-story/${storyIdToDownvote}`,
-          { withCredentials: true }
+          {},
+          {
+            headers: {
+              Authorization: authToken,
+            },
+          }
         );
 
         if (response.status === 200) {
-          // Update the state to reflect that the user has upvoted this story
+          // Update the state to reflect that the user has downvoted this story
           setDownvotedStories([...downvotedStories, storyIdToDownvote]);
           fetchUserHistory();
+        } else if (response.status === 401) {
+          // User is not authenticated, show alert
+          alert('Please log in or register to downvote.');
         } else {
-          console.error('Failed to upvote story.');
+          console.error('Failed to downvote story.');
         }
       } catch (error) {
         console.error('Error:', error);
       }
     }
   };
+
   const handleDelete = async (index) => {
-    // Retrieve the story ID from the prompts state
     const storyIdToDelete = prompts[index]._id;
 
     try {
-      // Make a DELETE request to delete the story by ID
-      const response = await axios.delete(`http://localhost:5000/api/delete-story/${storyIdToDelete}`, { withCredentials: true });
+      const authToken = `${user.token}`;
+
+      const response = await axios.delete(
+        `http://localhost:5000/api/delete-story/${storyIdToDelete}`,
+        {
+          headers: {
+            Authorization: authToken,
+          },
+        }
+      );
 
       if (response.status === 200) {
         // Remove the deleted story from the prompts state

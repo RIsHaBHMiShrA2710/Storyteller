@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: String,
   password: String,
+  jwtToken: String, // Add a field to store the JWT token
   history: [
     {
       title: String,

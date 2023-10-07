@@ -1,24 +1,12 @@
 const User = require('../models/user');
 const Story = require('../models/story');
 const openAi = require('../config/openaiConfig');
+
 // Add a new story prompt
-async function generateResponseFromOpenAI(inputText) {
-    try {
-        const response = await openAi.chat.completions.create({
-            model: 'gpt-3.5-turbo', // Specify the model you want to use
-            messages: [{ role: 'system', content: 'You are a story generator bot.' }, { role: 'user', content: inputText }],
-            max_tokens: 100,
-        });
-        return response.choices[0].message.content;
-    } catch (error) {
-        console.error('Error generating response:', error.message);
-        throw new Error('An error occurred while generating the response.');
-    }
-}
 exports.addPrompt = async (req, res) => {
     const { title, content } = req.body;
-    const userId = req.user.id; // Assuming you have user information in req.user
-
+    const user = req.user; // Extracted from the JWT token's payload
+    const userId = user.userId;
     try {
         // Find the user by ID
         const user = await User.findById(userId);
@@ -28,26 +16,20 @@ exports.addPrompt = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const inputText = `Create/complete a story of not more than 200 words from the given details:\n\nTitle: ${title}\n\nStory Essence: ${content}`;
-        const generatedStory = await generateResponseFromOpenAI(inputText);
-
         const newPrompt = {
             title,
-            content: generatedStory,
+            content,
             upvotes: [],
             downvotes: [],
         };
 
-
-
         const newStory = new Story({
             author: userId, // Set the author's user ID
             title,
-            content: generatedStory, // Use the generated story content
+            content, // Use the generated story content
             upvotes: [],
             downvotes: [],
         });
-
 
         user.history.push(newPrompt);
 
@@ -66,7 +48,8 @@ exports.addPrompt = async (req, res) => {
 
 // Upvote a story
 exports.upvoteStory = async (req, res) => {
-    const userId = req.user.id; // User who is upvoting
+    const user = req.user; // Extracted from the JWT token's payload
+    const userId = user.userId; // Extracted from the JWT token's payload
     const storyId = req.params.storyId;
 
     try {
@@ -109,7 +92,8 @@ exports.upvoteStory = async (req, res) => {
 
 // Downvote a story
 exports.downvoteStory = async (req, res) => {
-    const userId = req.user.id; // User who is downvoting
+    const user = req.user; // Extracted from the JWT token's payload
+    const userId = user.userId; // Extracted from the JWT token's payload
     const storyId = req.params.storyId;
 
     try {
@@ -153,19 +137,19 @@ exports.downvoteStory = async (req, res) => {
 
 // Get user history
 exports.getUserHistory = async (req, res) => {
-    const userId = req.user.id; // Assuming you have user information in req.user
+    const user = req.user; // Extracted from the JWT token's payload
+    const userId = user.userId; // Extracted from the JWT token's payload
 
     try {
         // Find all stories where the author ID matches the user ID
         const userHistory = await Story.find({ author: userId });
-
+       
         res.status(200).json(userHistory);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('Internal server error.');
     }
 };
-
 
 exports.getAllStories = async (req, res) => {
     try {
@@ -178,9 +162,11 @@ exports.getAllStories = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 // Delete a story by ID
 exports.deleteStory = async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user; // Extracted from the JWT token's payload
+    const userId = user.userId; // Extracted from the JWT token's payload
     const storyId = req.params.storyId;
 
     try {
@@ -208,6 +194,7 @@ exports.deleteStory = async (req, res) => {
         res.status(500).send('Internal server error.');
     }
 };
+
 exports.fullStory = async (req, res) => {
     try {
         const { storyId } = req.params;
@@ -223,4 +210,3 @@ exports.fullStory = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-

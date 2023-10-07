@@ -1,3 +1,4 @@
+
 const bcrypt = require('bcryptjs');
 
 // Hash a password using bcrypt

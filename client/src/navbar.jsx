@@ -12,22 +12,14 @@ const NavbarComponent = () => {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const navigate = useNavigate();
   const { user, login, logout } = useAuth(); // Access user, login, and logout from the context
+  
 
   const handleLogout = async () => {
     try {
-      // Implement logout logic here (e.g., make an API request to log the user out on the server).
-      // After successful logout, use the logout function from the context.
-      axios.get('http://localhost:5000/logout', { withCredentials: true })
-      .then(() => {
-        console.log(user);
-        logout(); // Call the logout function to clear the user state
-        navigate("/"); // Redirect to the login page after logout
-        window.location.reload();
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-      
+      // Implement logout logic here by calling the logout function from the context.
+      logout();
+      navigate("/"); // Redirect to the login page after logout
+      // Optionally, you can also make an API request to invalidate the JWT token on the server.
     } catch (error) {
       console.error("Error:", error);
     }
@@ -39,14 +31,15 @@ const NavbarComponent = () => {
       const response = await axios.post("http://localhost:5000/register", {
         username: registrationData.username,
         password: registrationData.password,
+      });
 
-      }, { withCredentials: true }); // Include withCredentials option
-  
       if (response.status === 200) {
         // Update the user state in the context if registration is successful.
-        login(response.data.user);
+        console.log(response.data.jwtToken);
+        console.log(response.data.user);
+        console.log(response.data); 
+        login(response.data.jwtToken, response.data.user);
         setShowRegisterModal(false); // Close the modal.
-        window.location.reload();
       }
     } catch (error) {
       console.error("Error:", error);
@@ -59,20 +52,19 @@ const NavbarComponent = () => {
       const response = await axios.post("http://localhost:5000/login", {
         username: loginData.username,
         password: loginData.password,
-      }, { withCredentials: true }); // Include withCredentials option
-  
+      });
+
       if (response.status === 200) {
         // Update the user state in the context if login is successful.
-        console.log("User data on successful login:", response.data.user);
-        login(response.data.user);
+        login(response.data.jwtToken, response.data.user);
         setShowLoginModal(false); 
-        window.location.reload();
       }
     } catch (error) {
       alert("Please try again with valid username and password");
       console.error("Error:", error);
     }
   };
+  
   
   return (
     <Navbar bg="dark" variant="dark" expand="lg">

@@ -20,16 +20,21 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Define a login function
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const login = (jwtToken, userData) => {
+    setUser({
+      token: jwtToken,
+      user: userData,
+    });
+    localStorage.setItem('user', JSON.stringify({ token: jwtToken, user: userData }));
   };
-
+  
   // Define a logout function
   const logout = () => {
-    setUser(null);
+    // Remove the JWT token from storage
     localStorage.removeItem('user');
+    setUser(null);
   };
+  
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

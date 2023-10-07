@@ -29,7 +29,7 @@ const PromptComponent = () => {
       console.log(authToken);
       console.log(user);
   
-      const response = await axios.get('http://localhost:5000/api/user-history', {
+      const response = await axios.get('https://storygeneration.onrender.com/api/user-history', {
         headers: {
           Authorization: authToken,
         },
@@ -63,7 +63,7 @@ const PromptComponent = () => {
         const authToken = `${user.token}`;
 
         const response = await axios.post(
-          'http://localhost:5000/api/add-prompt',
+          'https://storygeneration.onrender.com/api/add-prompt',
           { title, content: story },
           {
             headers: {
@@ -98,7 +98,7 @@ const PromptComponent = () => {
         const authToken = `${user.token}`;
 
         const response = await axios.post(
-          `http://localhost:5000/api/upvote-story/${storyIdToUpvote}`,
+          `https://storygeneration.onrender.com/api/upvote-story/${storyIdToUpvote}`,
           {},
           {
             headers: {
@@ -131,7 +131,7 @@ const PromptComponent = () => {
         const authToken = `${user.token}`;
 
         const response = await axios.post(
-          `http://localhost:5000/api/downvote-story/${storyIdToDownvote}`,
+          `https://storygeneration.onrender.com/api/downvote-story/${storyIdToDownvote}`,
           {},
           {
             headers: {
@@ -163,7 +163,7 @@ const PromptComponent = () => {
       const authToken = `${user.token}`;
 
       const response = await axios.delete(
-        `http://localhost:5000/api/delete-story/${storyIdToDelete}`,
+        `https://storygeneration.onrender.com/api/delete-story/${storyIdToDelete}`,
         {
           headers: {
             Authorization: authToken,

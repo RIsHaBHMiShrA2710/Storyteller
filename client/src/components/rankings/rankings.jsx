@@ -14,7 +14,7 @@ const RankingComponent = () => {
 
   const fetchRankings = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/all-stories');
+      const response = await axios.get('https://storygeneration.onrender.com/api/all-stories');
 
       if (response.status === 200) {
         // Sort the stories based on the upvote-to-downvote ratio
@@ -39,33 +39,33 @@ const RankingComponent = () => {
 
   const handleUpvote = async (index) => {
     const storyIdToUpvote = stories[index]._id;
-    console.log(storyIdToUpvote);
+
     if (!upvotedStories.includes(storyIdToUpvote)) {
       try {
-        // Make a POST request to update the upvotes on the server
+        const authToken = `${user.token}`;
+
         const response = await axios.post(
-          `http://localhost:5000/api/upvote-story/${storyIdToUpvote}`,
+          `https://storygeneration.onrender.com/api/upvote-story/${storyIdToUpvote}`,
           {},
-          { withCredentials: true }
+          {
+            headers: {
+              Authorization: authToken,
+            },
+          }
         );
 
         if (response.status === 200) {
           // Update the state to reflect that the user has upvoted this story
           setUpvotedStories([...upvotedStories, storyIdToUpvote]);
           fetchRankings();
-        }else if (response.status === 401) {
+        } else if (response.status === 401) {
           // User is not authenticated, show alert
           alert('Please log in or register to upvote.');
         } else {
           console.error('Failed to upvote story.');
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          // User is not authenticated, show alert
-          alert('Please log in or register to upvote.');
-        } else {
-          console.error('Error:', error);
-        }
+        console.error('Error:', error);
       }
     }
   };
@@ -75,31 +75,34 @@ const RankingComponent = () => {
 
     if (!downvotedStories.includes(storyIdToDownvote)) {
       try {
-        // Make a POST request to update the downvotes on the server
+        const authToken = `${user.token}`;
+
         const response = await axios.post(
-          `http://localhost:5000/api/downvote-story/${storyIdToDownvote}`,
+          `https://storygeneration.onrender.com/api/downvote-story/${storyIdToDownvote}`,
           {},
-          { withCredentials: true }
+          {
+            headers: {
+              Authorization: authToken,
+            },
+          }
         );
 
         if (response.status === 200) {
           // Update the state to reflect that the user has downvoted this story
           setDownvotedStories([...downvotedStories, storyIdToDownvote]);
-          // Fetch rankings again to update the list
           fetchRankings();
+        } else if (response.status === 401) {
+          // User is not authenticated, show alert
+          alert('Please log in or register to downvote.');
         } else {
           console.error('Failed to downvote story.');
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          // User is not authenticated, show alert
-          alert('Please log in or register to upvote.');
-        } else {
-          console.error('Error:', error);
-        }
+        console.error('Error:', error);
       }
     }
   };
+
 
   return (
     <div className="ranking-container">

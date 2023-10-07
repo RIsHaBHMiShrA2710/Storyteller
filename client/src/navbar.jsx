@@ -28,7 +28,7 @@ const NavbarComponent = () => {
   const handleRegister = async () => {
     try {
       // Make an API request to register the user
-      const response = await axios.post("http://localhost:5000/register", {
+      const response = await axios.post("https://storygeneration.onrender.com/register", {
         username: registrationData.username,
         password: registrationData.password,
       });
@@ -49,7 +49,7 @@ const NavbarComponent = () => {
   const handleLogin = async () => {
     try {
       // Make an API request to log the user in
-      const response = await axios.post("http://localhost:5000/login", {
+      const response = await axios.post("https://storygeneration.onrender.com/login", {
         username: loginData.username,
         password: loginData.password,
       });

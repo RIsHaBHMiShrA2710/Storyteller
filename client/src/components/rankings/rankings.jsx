@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowCircleRight, faThumbsUp, faThumbsDown, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import './rankings.css';
+import TruncateText from '../create/truncateText';
 import { useAuth } from '../../context/AuthContext';
 
 const RankingComponent = () => {
@@ -14,6 +15,7 @@ const RankingComponent = () => {
 
   const fetchRankings = async () => {
     try {
+      console.log(user.user._id);
       const response = await axios.get('https://storygeneration.onrender.com/api/all-stories');
 
       if (response.status === 200) {
@@ -37,6 +39,13 @@ const RankingComponent = () => {
     fetchRankings();
   }, []);
 
+  if (stories === null) {
+    return (
+      <div className='loader-body'>
+        <div className="loader">Loading</div>
+      </div>
+    );
+  }
   const handleUpvote = async (index) => {
     const storyIdToUpvote = stories[index]._id;
 
@@ -117,16 +126,16 @@ const RankingComponent = () => {
               <h3>{item.title}</h3>
 
               <div className="voting-buttons">
-                <button className="voting-button" onClick={() => handleUpvote(index)}>
+                <button className={`voting-button ${item.upvotes.includes(user.user._id) ? 'voted' : ''}`} onClick={() => handleUpvote(index)}>
                   <FontAwesomeIcon icon={faThumbsUp} /> ({item.upvotes.length})
                 </button>
 
-                <button className="voting-button" onClick={() => handleDownvote(index)}>
+                <button className={`voting-button ${item.downvotes.includes(user.user._id) ? 'voted' : ''}`} onClick={() => handleDownvote(index)}>
                   <FontAwesomeIcon icon={faThumbsDown} /> ({item.downvotes.length})
                 </button>
               </div>
             </div>
-            <p>{item.content}</p>
+            <TruncateText text={item.content} maxWords={40} />
           </div>
         ))}
       </div>

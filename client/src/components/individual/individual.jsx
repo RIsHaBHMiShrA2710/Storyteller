@@ -39,7 +39,11 @@ function Individual() {
 
     // Render loading while fetching data
     if (story === null) {
-        return <div>Loading...</div>;
+        return (
+          <div className='loader-body'>
+            <div className="loader">Loading</div>
+          </div>
+        );
     }
     const handleUpvote = async (index) => {
         const storyIdToUpvote = storyId;

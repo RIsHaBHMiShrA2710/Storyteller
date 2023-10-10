@@ -3,6 +3,7 @@
     background-image: url("https://png.pngtree.com/background/20210715/original/pngtree-blue-purple-universe-galaxy-gradient-background-picture-image_1309027.jpg");
     background-repeat: no-repeat;
     background-size: cover;
+    min-height: 90vh;
 }
 .ranking-container h2{
     color: white;
@@ -42,3 +43,8 @@
     font-family: 'Stylish', sans-serif;
     color: #333;
   }
+  .voting-button.voted {
+    color: red;
+    background-color: red;
+  }
+  

@@ -4,6 +4,7 @@ import PromptComponent from "./components/create/PromotComponent";
 import RankingComponent from "./components/rankings/rankings";
 import Individual from "./components/individual/individual";
 import Navbar from "./navbar";
+import Footer from "./footer";
 function App() {
   return (
     <>
@@ -14,7 +15,8 @@ function App() {
                 <Route path="/global-ranking" element={<RankingComponent/>} />
                 <Route path="/full-story/:storyId" element={<Individual />} />
              </Routes>
-        </Router>
+        <Footer />
+      </Router>
         
     </>
   );

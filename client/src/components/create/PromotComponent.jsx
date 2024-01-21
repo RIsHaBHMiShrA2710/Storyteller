@@ -14,7 +14,7 @@ import TruncateText from './truncateText';
 import { useAuth } from '../../context/AuthContext';
 
 const PromptComponent = () => {
-  const { user, logout } = useAuth(); // Access the user and logout function from the context
+  const { user, logout } = useAuth(); 
   const [title, setTitle] = useState('');
   const [story, setStory] = useState('');
   const [prompts, setPrompts] = useState([]);
@@ -41,13 +41,10 @@ const PromptComponent = () => {
     } catch (error) {
       console.error('Error fetching user history:', error);
   
-      // Handle token expiration (401 Unauthorized)
+    
       if (error.response && error.response.status === 401) {
         alert('Your session has expired. Please log in again.');
-        logout(); // Call your logout function to clear user state
-        // Redirect to the login page
-        // Navigate to your login page using your router's navigation method
-        // Example: navigate("/login");
+        logout();
       }
     }
   };
@@ -191,7 +188,7 @@ const PromptComponent = () => {
 
         {user && (
           <div className="user-info">
-            <p>Welcome, {user.username}!</p>
+            Welcome Back !
           </div>
         )}
 

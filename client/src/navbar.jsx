@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Navbar, Nav, Button, Modal, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import Spinner from 'react-bootstrap/Spinner';
 import axios from "axios";
 import { useAuth } from "./context/AuthContext"; // Adjust the path as needed
 
 const NavbarComponent = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
   const [registrationData, setRegistrationData] = useState({ username: "", password: "" });
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const navigate = useNavigate();
@@ -49,6 +51,7 @@ const NavbarComponent = () => {
   const handleLogin = async () => {
     try {
       // Make an API request to log the user in
+      setLoginLoading(true);
       const response = await axios.post("https://storygeneration.onrender.com/login", {
         username: loginData.username,
         password: loginData.password,
@@ -62,6 +65,9 @@ const NavbarComponent = () => {
     } catch (error) {
       alert("Please try again with valid username and password");
       console.error("Error:", error);
+    }finally {
+      // Set loading to false when the request is complete (success or failure)
+      setLoginLoading(false);
     }
   };
   
@@ -168,8 +174,12 @@ const NavbarComponent = () => {
           <Button variant="secondary" onClick={() => setShowLoginModal(false)}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleLogin}>
-            Login
+          <Button variant="primary" onClick={handleLogin} disabled={loginLoading} className="modal-button">
+            {loginLoading ? (
+            <div id="loader"><Spinner animation="border" variant="light"/></div>
+            ) : (
+              'Login'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
